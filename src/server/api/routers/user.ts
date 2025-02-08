@@ -1,14 +1,14 @@
 import { z } from "zod";
 
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import { getInstallation } from "@/lib/github";
 
-export const postRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
+export const userRouter = createTRPCRouter({
+  getInstallation: publicProcedure
+    .input(z.number())
+    .query(async ({ input }) => {
+      console.log("input", input);
+      return await getInstallation(input);
     }),
 
   create: publicProcedure
