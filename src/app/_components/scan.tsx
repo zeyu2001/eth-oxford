@@ -11,6 +11,8 @@ import { type FixResult } from "@/server/api/routers/fixer";
 import { HammerIcon } from "lucide-react";
 import { useUserStore } from "@/stores/use-user-store";
 
+type FinalFixResult = FixResult & { fixedFile: string };
+
 export function SecurityScan({
   repositoryId,
   scanId,
@@ -24,8 +26,8 @@ export function SecurityScan({
   });
   const fixVulnerability = api.fixer.fixVulnerabilities.useMutation();
   const pullRequest = api.scanner.createPullRequest.useMutation();
-  const [fixes, setFixes] = useState<Record<number, FixResult>>({});
-  const [pr, setpr] = useState<Record<number, boolean>>({});
+  const [fixes, setFixes] = useState<Record<number, FinalFixResult>>({});
+  const [pr, setPr] = useState<Record<number, boolean>>({});
 
   const installationId = useUserStore((state) => state.installationId);
   const [isFixing, setIsFixing] = useState(false);
@@ -55,27 +57,31 @@ export function SecurityScan({
       endCol: vulnerability.endCol,
       codeSnippet: vulnerability.code,
     });
+    if (result === null) return setIsFixing(false);
+
     if ("fixedCode" in result) {
       setFixes((prev) => ({ ...prev, [index]: result }));
     }
     setIsFixing(false);
   };
 
-  const makePullRequest = async (index: number, vulnerability: any) => {
+  const makePullRequest = async (
+    index: number,
+    vulnerability: (typeof data.result)[0],
+  ) => {
     const title = vulnerability.file.split("/")[4];
     const filepath = vulnerability.file.split("/").slice(2).join("/");
-    const input = { installationId, 
+    const input = {
+      installationId: installationId!,
       repositoryId,
-      title, 
+      title: title!,
       body: vulnerability.message,
       filepath: filepath,
-      newFileContent: fixes[index],
+      newFileContent: fixes[index]!.fixedFile,
     };
-    //console.log("helper");
-    //console.log(input);
     const result = await pullRequest.mutateAsync(input);
     if (result.madePR) {
-      setpr((prev) => ({ ...prev, [index]: result.madePR }));
+      setPr((prev) => ({ ...prev, [index]: true }));
     }
     setIsFixing(false);
   };
@@ -126,19 +132,17 @@ export function SecurityScan({
                 <div className="mt-4">
                   <h3 className="font-bold text-green-500">Fixed Code:</h3>
                   <pre className="rounded bg-gray-900 p-2 text-white">
-                    {fixes[index]}
+                    {fixes[index].fixedCode}
                   </pre>
-                  <button
+                  <Button
                     onClick={() => makePullRequest(index, result)}
-                    className="mt-2 rounded-md bg-blue-500 px-3 py-1 text-white"
+                    className="mt-2"
                   >
                     Make PR
-                  </button>
+                  </Button>
                 </div>
               )}
-              {
-                pr[index] && <p>Pull Request Made </p>
-              }
+              {pr[index] && <p>Pull Request Made </p>}
             </li>
           ))}
         </ul>

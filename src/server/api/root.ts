@@ -1,8 +1,7 @@
 import { userRouter } from "@/server/api/routers/user";
 import { scannerRouter } from "./routers/scanner";
-//import { postRouter } from "~/server/api/routers/post";
 import { semgrepRouter } from "./routers/semgrep";
-import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
+import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 import { fixerRoute } from "./routers/fixer";
 
 /**

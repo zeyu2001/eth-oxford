@@ -32,17 +32,19 @@ export const cloneRepository = async (
 ) => {
   const octokit = await app.getInstallationOctokit(installationId);
 
-  const { data: { token } } = await octokit.rest.apps.createInstallationAccessToken({
+  const {
+    data: { token },
+  } = await octokit.rest.apps.createInstallationAccessToken({
     installation_id: installationId,
   });
 
   const repository = await octokit.rest.repos.get({
-    owner: repositoryId.split("/")[0],
-    repo: repositoryId.split("/")[1],
+    owner: repositoryId.split("/")[0]!,
+    repo: repositoryId.split("/")[1]!,
   });
 
   const cloneUrl = repository.data.clone_url;
-  
+
   const tempDir = mkdtempSync(
     `tmp/clone-${repositoryId.split("/")[0]}-${repositoryId.split("/")[1]}-`,
   );
@@ -63,8 +65,8 @@ export const getDefaultBranch = async (
 ) => {
   const octokit = await app.getInstallationOctokit(installationId);
   const { data: repoData } = await octokit.rest.repos.get({
-    owner: repositoryId.split("/")[0],
-    repo: repositoryId.split("/")[1],
+    owner: repositoryId.split("/")[0]!,
+    repo: repositoryId.split("/")[1]!,
   });
 
   return repoData.default_branch;
@@ -77,8 +79,8 @@ export const getLatestSha = async (
 ) => {
   const octokit = await app.getInstallationOctokit(installationId);
   const { data: refData } = await octokit.rest.git.getRef({
-    owner: repositoryId.split("/")[0],
-    repo: repositoryId.split("/")[1],
+    owner: repositoryId.split("/")[0]!,
+    repo: repositoryId.split("/")[1]!,
     ref: `heads/${ref}`,
   });
   return refData.object.sha;
@@ -92,8 +94,8 @@ export const createBranch = async (
 ) => {
   const octokit = await app.getInstallationOctokit(installationId);
   const result = await octokit.rest.git.createRef({
-    owner: repositoryId.split("/")[0],
-    repo: repositoryId.split("/")[1],
+    owner: repositoryId.split("/")[0]!,
+    repo: repositoryId.split("/")[1]!,
     ref: `refs/heads/${branchName}`,
     sha: sha,
   });
@@ -108,15 +110,18 @@ export const getFileSHA = async (
   filepath: string,
 ) => {
   const octokit = await app.getInstallationOctokit(installationId);
-  console.log(branchName, filepath);
   const { data: fileData } = await octokit.rest.repos.getContent({
-    owner: repositoryId.split("/")[0],
-    repo: repositoryId.split("/")[1],
+    owner: repositoryId.split("/")[0]!,
+    repo: repositoryId.split("/")[1]!,
     path: filepath,
     ref: branchName,
   });
-  return (fileData as any).sha;
-}
+
+  if ("sha" in fileData) {
+    return fileData.sha;
+  }
+  throw new Error("Failed to get file SHA");
+};
 
 export const commitFile = async (
   installationId: number,
@@ -125,12 +130,12 @@ export const commitFile = async (
   filepath: string,
   content: string,
   message: string,
-  fileSHA: string
+  fileSHA: string,
 ) => {
   const octokit = await app.getInstallationOctokit(installationId);
   const result = await octokit.rest.repos.createOrUpdateFileContents({
-    owner: repositoryId.split("/")[0],
-    repo: repositoryId.split("/")[1],
+    owner: repositoryId.split("/")[0]!,
+    repo: repositoryId.split("/")[1]!,
     message: message,
     content: Buffer.from(content).toString("base64"),
     branch: branchName,
@@ -151,8 +156,8 @@ export const createPR = async (
 ) => {
   const octokit = await app.getInstallationOctokit(installationId);
   const result = await octokit.rest.pulls.create({
-    owner: repositoryId.split("/")[0],
-    repo: repositoryId.split("/")[1],
+    owner: repositoryId.split("/")[0]!,
+    repo: repositoryId.split("/")[1]!,
     title,
     body,
     head,

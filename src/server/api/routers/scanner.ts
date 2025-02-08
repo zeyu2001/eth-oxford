@@ -74,10 +74,10 @@ export const scannerRouter = createTRPCRouter({
             code: vuln.extra.lines,
           }));
         } catch (error) {
-          throw new Error("Failed to parse Semgrep output: " + error.message);
+          throw new Error(
+            "Failed to parse Semgrep output: " + (error as Error).message,
+          );
         }
-
-        //console.log(ctx.db);
 
         const scan = await ctx.db.scan.create({
           data: {
@@ -119,7 +119,7 @@ export const scannerRouter = createTRPCRouter({
         input.installationId,
         input.repositoryId,
         defaultBranch,
-      )      
+      );
       console.log(0);
 
       const result = await createBranch(
@@ -162,6 +162,6 @@ export const scannerRouter = createTRPCRouter({
         "main",
       );
 
-      return { madePR: prResult } ;
+      return { madePR: prResult };
     }),
 });

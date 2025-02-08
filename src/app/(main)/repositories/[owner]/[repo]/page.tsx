@@ -12,7 +12,7 @@ const statuses = {
   error: "text-rose-400 bg-rose-400/10",
 };
 
-function classNames(...classes) {
+function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 

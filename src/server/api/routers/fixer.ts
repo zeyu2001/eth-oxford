@@ -1,4 +1,4 @@
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { OpenAI } from "openai";
 import fs from "fs/promises";
 import { zodResponseFormat } from "openai/helpers/zod";
@@ -70,7 +70,58 @@ export const fixerRoute = createTRPCRouter({
           response_format: zodResponseFormat(fixResult, "result"),
         });
 
-        return completion.choices[0].message.parsed;
+        const result = completion.choices[0]?.message.parsed;
+
+        if (!result) {
+          throw new Error("Failed to generate fix");
+        }
+
+        const fileContentLines = fileContents.split("\n");
+        const fixContentLines = result.fixedCode.split("\n");
+        const fixedFileContent = [];
+
+        for (let i = 0; i < result.fixStartLine; i++) {
+          fixedFileContent.push(fileContentLines[i]);
+        }
+
+        const beforeFix = fileContentLines[result.fixStartLine]!.substring(
+          0,
+          result.fixStartCol,
+        );
+        const afterFix = fileContentLines[result.fixEndLine]!.substring(
+          result.fixEndCol,
+        );
+
+        // If the fixed code is a single line, merge it into one line with the before and after segments.
+        if (fixContentLines.length === 1) {
+          fixedFileContent.push(beforeFix + fixContentLines[0] + afterFix);
+        } else {
+          // For multi-line fixes, process the first line of the fix:
+          fixedFileContent.push(beforeFix + fixContentLines[0]);
+
+          // Append any middle lines from the fixed code as they are:
+          for (let j = 1; j < fixContentLines.length - 1; j++) {
+            fixedFileContent.push(fixContentLines[j]);
+          }
+
+          // For the last line, attach the after-fix segment from the original file:
+          fixedFileContent.push(
+            fixContentLines[fixContentLines.length - 1] + afterFix,
+          );
+        }
+
+        // Append all lines after the fix region unchanged
+        for (let i = result.fixEndLine + 1; i < fileContentLines.length; i++) {
+          fixedFileContent.push(fileContentLines[i]);
+        }
+
+        // Join the array back into a single string representing the full fixed file
+        const finalFixedFile = fixedFileContent.join("\n");
+
+        return {
+          ...result,
+          fixedFile: finalFixedFile,
+        };
       } catch (error) {
         console.error("OpenAI API error:", error);
         return {

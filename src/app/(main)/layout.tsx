@@ -12,7 +12,7 @@ import { BookCopyIcon, House, Radar } from "lucide-react/icons";
 import { usePathname } from "next/navigation";
 import { useUserStore } from "@/stores/use-user-store";
 
-function classNames(...classes) {
+function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
@@ -33,7 +33,9 @@ export default function Layout({
       const installationId = localStorage.getItem("installationId");
 
       changeUsername(username);
-      changeInstallationId(parseInt(installationId));
+      changeInstallationId(
+        installationId !== null ? parseInt(installationId) : installationId,
+      );
     }
   }, []);
 

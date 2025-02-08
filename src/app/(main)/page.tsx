@@ -23,7 +23,7 @@ export default function Page() {
     {
       installationId: newInstallationId
         ? parseInt(newInstallationId)
-        : installationId,
+        : installationId!,
     },
     {
       enabled: !!newInstallationId || !!installationId,

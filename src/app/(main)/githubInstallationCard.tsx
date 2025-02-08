@@ -14,8 +14,8 @@ export const GithubInstallationCard = ({
   installationId,
   username,
 }: {
-  installationId: number;
-  username: string;
+  installationId: number | null | undefined;
+  username: string | null | undefined;
 }) => {
   if (!installationId || !username) {
     return (

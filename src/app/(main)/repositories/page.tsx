@@ -16,9 +16,6 @@ import Link from "next/link";
 import { Book, ExternalLink, Lock, Radar } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ToastAction } from "@radix-ui/react-toast";
-import { SecurityScan } from "@/app/_components/scan";
-
-
 
 export default function Page() {
   const username = useUserStore((state) => state.username);
@@ -26,7 +23,7 @@ export default function Page() {
 
   const getRepositoriesQuery = api.user.repositories.useQuery(
     {
-      installationId,
+      installationId: installationId!,
     },
     {
       enabled: !!installationId,
@@ -55,9 +52,15 @@ export default function Page() {
     return <p>Failed to get repositories</p>;
   }
 
-  const repositories = getRepositoriesQuery.data.sort(
-    (a, b) => new Date(b.pushed_at).getTime() - new Date(a.pushed_at).getTime(),
-  );
+  const repositories =
+    getRepositoriesQuery.data?.sort((a, b) => {
+      if (a.pushed_at && b.pushed_at) {
+        return (
+          new Date(b.pushed_at).getTime() - new Date(a.pushed_at).getTime()
+        );
+      }
+      return 0;
+    }) ?? [];
 
   return (
     <div>
@@ -68,8 +71,8 @@ export default function Page() {
             key={repo.full_name}
             isPrivate={repo.private}
             fullname={repo.full_name}
-            language={repo.language}
-            pushedAt={repo.pushed_at}
+            language={repo.language ?? "Unknown"}
+            pushedAt={repo.pushed_at ?? ""}
             htmlUrl={repo.html_url}
             username={username}
             installationId={installationId}
@@ -109,7 +112,7 @@ const ScanRepositoryCard = ({
     onSettled: () => {
       setScanning(false);
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (data, _variables) => {
       toast({
         title: "Repository scanned",
         description: "The repository has been scanned successfully",
@@ -172,7 +175,13 @@ const ScanRepositoryCard = ({
           }}
           disabled={scanning}
         >
-          {scanning ? <Spinner className="mr-2" /> : <Radar className="mr-2" />}
+          {scanning ? (
+            <span className="mr-2">
+              <Spinner />
+            </span>
+          ) : (
+            <Radar className="mr-2" />
+          )}
           Scan repository
         </Button>
         <Button
