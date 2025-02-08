@@ -73,7 +73,6 @@ export default function Page() {
   return (
     <div>
       <h1 className="text-2xl font-bold">Repositories</h1>
-      {scanRepositoryMutation.isSuccess && <div>HELLO</div>}
       <div className="space-y-4 py-4">
         {repositories.map((repo) => (
           <Card key={repo.id}>
@@ -123,15 +122,6 @@ export default function Page() {
                 <Radar className="mr-2 size-6" />
                 Scan repository
               </Button>
-              {scannedRepositoryId === repo.full_name && (
-                <div className="mt-2 text-green-500">HELLO</div>
-              )}
-              {/* Display the tempDir if available */}
-              {scannedRepositoryId === repo.full_name && tempDir && (
-                <div className="mt-2 text-sm text-gray-500">
-                  Temporary Directory: {tempDir}
-                </div>
-              )}
               {scannedRepositoryId === repo.full_name && tempDir && (
                 <SecurityScan tempDir={tempDir} />
               )}
