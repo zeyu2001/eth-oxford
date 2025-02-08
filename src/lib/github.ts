@@ -1,6 +1,6 @@
 import { env } from "@/env";
 import { spawnSync } from "node:child_process";
-import { mkdtemp, mkdtempSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { App } from "octokit";
 
 const app = new App({
@@ -43,7 +43,7 @@ export const cloneRepository = async (
     `tmp/clone-${repositoryId.split("/")[0]}-${repositoryId.split("/")[1]}-`,
   );
 
-  spawnSync("git", ["clone", cloneUrl, tempDir], {
+  spawnSync("gh", ["repo", "clone", cloneUrl, tempDir], {
     env: {
       ...process.env,
       GITHUB_TOKEN: cloneToken,
@@ -51,4 +51,62 @@ export const cloneRepository = async (
   });
 
   return tempDir;
+};
+
+export const createBranch = async (
+  installationId: number,
+  repositoryId: string,
+  branchName: string,
+  sha: string,
+) => {
+  const octokit = await app.getInstallationOctokit(installationId);
+  const result = await octokit.rest.git.createRef({
+    owner: repositoryId.split("/")[0],
+    repo: repositoryId.split("/")[1],
+    ref: `refs/heads/${branchName}`,
+    sha,
+  });
+
+  return result;
+};
+
+export const commitFile = async (
+  installationId: number,
+  repositoryId: string,
+  branchName: string,
+  filepath: string,
+  content: string,
+  message: string,
+) => {
+  const octokit = await app.getInstallationOctokit(installationId);
+  const result = await octokit.rest.repos.createOrUpdateFileContents({
+    owner: repositoryId.split("/")[0],
+    repo: repositoryId.split("/")[1],
+    message: message,
+    content: Buffer.from(content).toString("base64"),
+    branch: branchName,
+  });
+
+  return result;
+};
+
+export const createPR = async (
+  installationId: number,
+  repositoryId: string,
+  title: string,
+  body: string,
+  head: string,
+  base: string,
+) => {
+  const octokit = await app.getInstallationOctokit(installationId);
+  const result = await octokit.rest.pulls.create({
+    owner: repositoryId.split("/")[0],
+    repo: repositoryId.split("/")[1],
+    title,
+    body,
+    head,
+    base,
+  });
+
+  return result;
 };
