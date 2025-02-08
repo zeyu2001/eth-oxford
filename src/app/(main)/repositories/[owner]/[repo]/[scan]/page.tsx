@@ -1,6 +1,6 @@
 "use client";
 
-import { SecurityScan } from "@/app/_components/outputResults";
+import { SecurityScan } from "@/app/_components/scan";
 import { useParams } from "next/navigation";
 
 export default function Page() {

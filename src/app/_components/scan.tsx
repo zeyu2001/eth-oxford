@@ -9,6 +9,7 @@ import { okaidia } from "@uiw/codemirror-theme-okaidia";
 import { Button } from "@/components/ui/button";
 import { type FixResult } from "@/server/api/routers/fixer";
 import { HammerIcon } from "lucide-react";
+import { useUserStore } from "@/stores/use-user-store";
 
 export function SecurityScan({
   repositoryId,
@@ -22,7 +23,11 @@ export function SecurityScan({
     id: scanId,
   });
   const fixVulnerability = api.fixer.fixVulnerabilities.useMutation();
+  const pullRequest = api.scanner.createPullRequest.useMutation();
   const [fixes, setFixes] = useState<Record<number, FixResult>>({});
+  const [pr, setpr] = useState<Record<number, boolean>>({});
+
+  const installationId = useUserStore((state) => state.installationId);
   const [isFixing, setIsFixing] = useState(false);
 
   if (isLoading || data === undefined) {
@@ -52,6 +57,25 @@ export function SecurityScan({
     });
     if ("fixedCode" in result) {
       setFixes((prev) => ({ ...prev, [index]: result }));
+    }
+    setIsFixing(false);
+  };
+
+  const makePullRequest = async (index: number, vulnerability: any) => {
+    const title = vulnerability.file.split("/")[4];
+    const filepath = vulnerability.file.split("/").slice(2).join("/");
+    const input = { installationId, 
+      repositoryId,
+      title, 
+      body: vulnerability.message,
+      filepath: filepath,
+      newFileContent: fixes[index],
+    };
+    //console.log("helper");
+    //console.log(input);
+    const result = await pullRequest.mutateAsync(input);
+    if (result.madePR) {
+      setpr((prev) => ({ ...prev, [index]: result.madePR }));
     }
     setIsFixing(false);
   };
@@ -101,16 +125,20 @@ export function SecurityScan({
               {fixes[index] && (
                 <div className="mt-4">
                   <h3 className="font-bold text-green-500">Fixed Code:</h3>
-                  <CodeMirror
-                    value={fixes[index].fixedCode}
-                    readOnly={true}
-                    theme={okaidia}
-                    basicSetup={{
-                      lineNumbers: false,
-                    }}
-                  />
+                  <pre className="rounded bg-gray-900 p-2 text-white">
+                    {fixes[index]}
+                  </pre>
+                  <button
+                    onClick={() => makePullRequest(index, result)}
+                    className="mt-2 rounded-md bg-blue-500 px-3 py-1 text-white"
+                  >
+                    Make PR
+                  </button>
                 </div>
               )}
+              {
+                pr[index] && <p>Pull Request Made </p>
+              }
             </li>
           ))}
         </ul>

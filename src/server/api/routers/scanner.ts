@@ -6,6 +6,9 @@ import {
   commitFile,
   createBranch,
   createPR,
+  getDefaultBranch,
+  getFileSHA,
+  getLatestSha,
 } from "@/lib/github";
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
@@ -74,6 +77,8 @@ export const scannerRouter = createTRPCRouter({
           throw new Error("Failed to parse Semgrep output: " + error.message);
         }
 
+        //console.log(ctx.db);
+
         const scan = await ctx.db.scan.create({
           data: {
             username: input.username,
@@ -98,7 +103,6 @@ export const scannerRouter = createTRPCRouter({
         repositoryId: z.string(),
         title: z.string(),
         body: z.string(),
-        currSHA: z.string(),
         filepath: z.string(),
         newFileContent: z.string(),
       }),
@@ -106,12 +110,36 @@ export const scannerRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const branchName = `security/codecure-${input.title.toLowerCase().replace(" ", "-")}`;
 
+      const defaultBranch = await getDefaultBranch(
+        input.installationId,
+        input.repositoryId,
+      );
+
+      const branchLatestSHA = await getLatestSha(
+        input.installationId,
+        input.repositoryId,
+        defaultBranch,
+      )      
+      console.log(0);
+
       const result = await createBranch(
         input.installationId,
         input.repositoryId,
         branchName,
-        input.currSHA,
+        branchLatestSHA,
       );
+
+      console.log(1);
+      console.log(result);
+
+      const fileSHA = await getFileSHA(
+        input.installationId,
+        input.repositoryId,
+        branchName,
+        input.filepath,
+      );
+      console.log(2);
+      console.log(fileSHA);
 
       const commitResult = await commitFile(
         input.installationId,
@@ -120,7 +148,10 @@ export const scannerRouter = createTRPCRouter({
         input.filepath,
         input.newFileContent,
         `Add security vulnerability fix at ${input.filepath}`,
+        fileSHA,
       );
+
+      console.log(commitResult);
 
       const prResult = await createPR(
         input.installationId,
@@ -131,6 +162,6 @@ export const scannerRouter = createTRPCRouter({
         "main",
       );
 
-      return prResult;
+      return { madePR: prResult } ;
     }),
 });

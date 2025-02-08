@@ -16,6 +16,9 @@ import Link from "next/link";
 import { Book, ExternalLink, Lock, Radar } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ToastAction } from "@radix-ui/react-toast";
+import { SecurityScan } from "@/app/_components/scan";
+
+
 
 export default function Page() {
   const username = useUserStore((state) => state.username);
