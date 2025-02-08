@@ -50,7 +50,7 @@ export const GithubInstallationCard = ({
       <Card>
         <CardHeader>
           <CardTitle>
-            <h1 className="text-2xl font-bold">GitHub integration</h1>
+            <h1 className="text-2xl font-bold">GitHub Integration</h1>
           </CardTitle>
           <CardDescription>
             CodeCure is installed on your GitHub account.

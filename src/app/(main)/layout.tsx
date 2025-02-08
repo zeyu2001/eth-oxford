@@ -1,31 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogBackdrop,
   DialogPanel,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
   TransitionChild,
 } from "@headlessui/react";
-import {
-  Bars3Icon,
-  BellIcon,
-  Cog6ToothIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
-import {
-  ChevronDownIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/20/solid";
-import { House } from "lucide-react/icons";
+import { Cog6ToothIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { BookCopyIcon, House } from "lucide-react/icons";
+import { usePathname } from "next/navigation";
+import { useUserStore } from "@/stores/use-user-store";
 
-const navigation = [
-  { name: "Dashboard", href: "#", icon: House, current: true },
-];
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
@@ -34,6 +20,37 @@ export default function Layout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const path = usePathname();
+
+  const changeUsername = useUserStore((state) => state.changeUsername);
+  const changeInstallationId = useUserStore(
+    (state) => state.changeInstallationId,
+  );
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const username = localStorage.getItem("username");
+      const installationId = localStorage.getItem("installationId");
+
+      changeUsername(username);
+      changeInstallationId(parseInt(installationId));
+    }
+  }, []);
+
+  const navigation = [
+    {
+      name: "Dashboard",
+      href: "/",
+      icon: House,
+      current: path === "/",
+    },
+    {
+      name: "Repositories",
+      href: "/repositories",
+      icon: BookCopyIcon,
+      current: path === "/repositories",
+    },
+  ];
 
   return (
     <div>
@@ -171,7 +188,9 @@ export default function Layout({
         </div>
       </div>
 
-      <div className="h-screen bg-gray-800 text-white lg:pl-72">{children}</div>
+      <div className="flex min-h-screen bg-gray-800 text-white lg:pl-72">
+        <div className="flex-1 p-16">{children}</div>
+      </div>
     </div>
   );
 }

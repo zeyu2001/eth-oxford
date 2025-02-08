@@ -1,16 +1,5 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { InfoIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { useUserStore } from "@/stores/use-user-store";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
@@ -30,10 +19,14 @@ export default function Page() {
   const queryParams = useSearchParams();
   const newInstallationId = queryParams.get("installation_id");
 
-  const installationQuery = api.user.getInstallation.useQuery(
-    newInstallationId ? parseInt(newInstallationId) : installationId,
+  const installationQuery = api.user.installation.useQuery(
     {
-      enabled: !!newInstallationId,
+      installationId: newInstallationId
+        ? parseInt(newInstallationId)
+        : installationId,
+    },
+    {
+      enabled: !!newInstallationId || !!installationId,
     },
   );
 
@@ -78,7 +71,7 @@ export default function Page() {
   ]);
 
   return (
-    <div className="p-16">
+    <div>
       <GithubInstallationCard
         installationId={installationId}
         username={username}
