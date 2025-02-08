@@ -1,6 +1,9 @@
 import { userRouter } from "@/server/api/routers/user";
-import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 import { scannerRouter } from "./routers/scanner";
+//import { postRouter } from "~/server/api/routers/post";
+import { semgrepRouter } from "./routers/semgrep";
+import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
+import { fixerRoute } from "./routers/fixer";
 
 /**
  * This is the primary router for your server.
@@ -10,6 +13,9 @@ import { scannerRouter } from "./routers/scanner";
 export const appRouter = createTRPCRouter({
   user: userRouter,
   scanner: scannerRouter,
+  //post: postRouter,
+  semgrep: semgrepRouter,
+  fixer: fixerRoute,
 });
 
 // export type definition of API

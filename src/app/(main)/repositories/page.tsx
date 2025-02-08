@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useUserStore } from "@/stores/use-user-store";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/trpc/react";
@@ -14,12 +15,17 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Book, ExternalLink, Lock, Radar } from "lucide-react";
+import { SecurityScan } from "~/app/_components/outputResults";
+
+
 
 export default function Page() {
   const { toast } = useToast();
 
   const username = useUserStore((state) => state.username);
   const installationId = useUserStore((state) => state.installationId);
+  const [scannedRepositoryId, setScannedRepositoryId] = useState<string | null>(null);
+  const [tempDir, setTempDir] = useState<string | null>(null);
 
   const getRepositoriesQuery = api.user.repositories.useQuery(
     {
@@ -29,7 +35,13 @@ export default function Page() {
       enabled: !!installationId,
     },
   );
-  const scanRepositoryMutation = api.scanner.scanRepository.useMutation();
+  const scanRepositoryMutation = api.scanner.scanRepository.useMutation({
+    onSuccess: (data, variables) => {
+      // When the mutation is successful, set the scanned repository ID
+      setScannedRepositoryId(variables.repositoryId);
+      setTempDir(data.tempDir);
+    },
+  });
 
   if (username === null || installationId === null) {
     return (
@@ -61,6 +73,7 @@ export default function Page() {
   return (
     <div>
       <h1 className="text-2xl font-bold">Repositories</h1>
+      {scanRepositoryMutation.isSuccess && <div>HELLO</div>}
       <div className="space-y-4 py-4">
         {repositories.map((repo) => (
           <Card key={repo.id}>
@@ -104,13 +117,27 @@ export default function Page() {
                     installationId,
                     repositoryId: repo.full_name,
                   });
+
                 }}
               >
                 <Radar className="mr-2 size-6" />
                 Scan repository
               </Button>
+              {scannedRepositoryId === repo.full_name && (
+                <div className="mt-2 text-green-500">HELLO</div>
+              )}
+              {/* Display the tempDir if available */}
+              {scannedRepositoryId === repo.full_name && tempDir && (
+                <div className="mt-2 text-sm text-gray-500">
+                  Temporary Directory: {tempDir}
+                </div>
+              )}
+              {scannedRepositoryId === repo.full_name && tempDir && (
+                <SecurityScan tempDir={tempDir} />
+              )}
             </CardContent>
           </Card>
+
         ))}
       </div>
     </div>
