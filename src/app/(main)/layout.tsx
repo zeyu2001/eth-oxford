@@ -11,6 +11,7 @@ import { Cog6ToothIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { BookCopyIcon, House, Radar } from "lucide-react/icons";
 import { usePathname } from "next/navigation";
 import { useUserStore } from "@/stores/use-user-store";
+import { Suspense } from "react";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -198,7 +199,9 @@ export default function Layout({
       </div>
 
       <div className="flex min-h-screen bg-gray-800 text-white lg:pl-72">
-        <div className="flex-1 p-16">{children}</div>
+        <div className="flex-1 p-16">
+          <Suspense>{children}</Suspense>
+        </div>
       </div>
     </div>
   );
