@@ -2,6 +2,7 @@ import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { exec } from "child_process";
 import util from "util";
 import { OpenAI } from "openai";
+import fs from 'fs/promises';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -10,16 +11,22 @@ export const fixerRoute = createTRPCRouter({
   .input((v) => v)
   .mutation(async ({ input }) => {
     try {
+      const fileContents = await fs.readFile(input.file, 'utf8');  
       const prompt = `
       The following code has security vulnerabilities detected by Semgrep. Your task is to fix the vulnerabilities and return the corrected code.
 
       Issue Details:
-      - **File**: ${input.file}
+      - **File Name**: ${input.file}
       - **Severity**: ${input.severity}
       - **Description**: ${input.message}
+      - **Problematic Lines**: Start at ${input.start}, ends at ${input.end}
       - **Problematic Code**:
       \`\`\`
       ${input.codeSnippet}
+      \`\`\`
+      - **Full code**:
+      \`\`\`
+      ${fileContents}
       \`\`\`
 
       Please return the fixed code in a code block without any additional explanation.
