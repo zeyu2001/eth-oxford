@@ -7,6 +7,8 @@ import { Spinner } from "@/components/spinner";
 import CodeMirror from "@uiw/react-codemirror";
 import { okaidia } from "@uiw/codemirror-theme-okaidia";
 import { Button } from "@/components/ui/button";
+import { type FixResult } from "@/server/api/routers/fixer";
+import { HammerIcon } from "lucide-react";
 
 export function SecurityScan({
   repositoryId,
@@ -20,7 +22,8 @@ export function SecurityScan({
     id: scanId,
   });
   const fixVulnerability = api.fixer.fixVulnerabilities.useMutation();
-  const [fixes, setFixes] = useState<Record<number, string>>({});
+  const [fixes, setFixes] = useState<Record<number, FixResult>>({});
+  const [isFixing, setIsFixing] = useState(false);
 
   if (isLoading || data === undefined) {
     return (
@@ -32,11 +35,25 @@ export function SecurityScan({
 
   if (error) return <p>Error: {error.message}</p>;
 
-  const handleFix = async (index: number, vulnerability: any) => {
-    const result = await fixVulnerability.mutateAsync(vulnerability);
-    if (result.fixedCode) {
-      setFixes((prev) => ({ ...prev, [index]: result.fixedCode }));
+  const handleFix = async (
+    index: number,
+    vulnerability: (typeof data.result)[0],
+  ) => {
+    setIsFixing(true);
+    const result = await fixVulnerability.mutateAsync({
+      file: vulnerability.file,
+      severity: vulnerability.severity,
+      message: vulnerability.message,
+      startLine: vulnerability.startLine,
+      startCol: vulnerability.startCol,
+      endLine: vulnerability.endLine,
+      endCol: vulnerability.endCol,
+      codeSnippet: vulnerability.code,
+    });
+    if ("fixedCode" in result) {
+      setFixes((prev) => ({ ...prev, [index]: result }));
     }
+    setIsFixing(false);
   };
 
   const vulns = data.result;
@@ -48,7 +65,9 @@ export function SecurityScan({
         <ul className="space-y-4">
           {vulns.map((result, index) => (
             <li key={index} className="max-w-5xl rounded-lg border p-4 shadow">
-              <p className="text-md truncate font-bold">{result.file}</p>
+              <p className="text-md truncate font-bold">
+                {result.file.split("/").slice(2).join("/")}
+              </p>
               <p
                 className={`font-semibold ${result.severity === "WARNING" ? "text-yellow-500" : "text-red-500"}`}
               >
@@ -67,15 +86,29 @@ export function SecurityScan({
                   lineNumbers: false,
                 }}
               />
-              <Button onClick={() => handleFix(index, result)} className="mt-2">
-                Fix
+              <Button
+                onClick={() => handleFix(index, result)}
+                className="mt-2"
+                disabled={isFixing}
+              >
+                {isFixing ? (
+                  <Spinner size="sm" />
+                ) : (
+                  <HammerIcon className="mr-2 h-4 w-4" />
+                )}
+                Fix Vulnerability
               </Button>
               {fixes[index] && (
                 <div className="mt-4">
                   <h3 className="font-bold text-green-500">Fixed Code:</h3>
-                  <pre className="rounded bg-gray-900 p-2 text-white">
-                    {fixes[index]}
-                  </pre>
+                  <CodeMirror
+                    value={fixes[index].fixedCode}
+                    readOnly={true}
+                    theme={okaidia}
+                    basicSetup={{
+                      lineNumbers: false,
+                    }}
+                  />
                 </div>
               )}
             </li>
