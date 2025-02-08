@@ -4,6 +4,9 @@ import { useState } from "react";
 
 import { api } from "@/trpc/react";
 import { Spinner } from "@/components/spinner";
+import CodeMirror from "@uiw/react-codemirror";
+import { okaidia } from "@uiw/codemirror-theme-okaidia";
+import { Button } from "@/components/ui/button";
 
 export function SecurityScan({
   repositoryId,
@@ -44,28 +47,29 @@ export function SecurityScan({
       {vulns?.length > 0 ? (
         <ul className="space-y-4">
           {vulns.map((result, index) => (
-            <li key={index} className="rounded-lg border p-4 shadow">
-              <p className="text-lg font-bold">{result.file}</p>
-              <p>
-                <strong>Start:</strong> Line {result.startLine} at column{" "}
-                {result.startCol} | <strong>End:</strong> Line {result.endLine}{" "}
-                at column {result.endCol}
-              </p>
+            <li key={index} className="max-w-5xl rounded-lg border p-4 shadow">
+              <p className="text-md truncate font-bold">{result.file}</p>
               <p
                 className={`font-semibold ${result.severity === "WARNING" ? "text-yellow-500" : "text-red-500"}`}
               >
                 {result.severity}
               </p>
-              <p>{result.message}</p>
-              <pre className="mt-2 rounded bg-gray-800 p-2 text-white">
-                {result.code}
-              </pre>
-              <button
-                onClick={() => handleFix(index, result)}
-                className="mt-2 rounded-md bg-blue-500 px-3 py-1 text-white"
-              >
+              <p className="text-sm">{result.message}</p>
+              <p className="text-sm text-gray-500">
+                Line {result.startLine}:{result.startCol} - Line{" "}
+                {result.endLine}:{result.endCol}
+              </p>
+              <CodeMirror
+                value={result.code}
+                readOnly={true}
+                theme={okaidia}
+                basicSetup={{
+                  lineNumbers: false,
+                }}
+              />
+              <Button onClick={() => handleFix(index, result)} className="mt-2">
                 Fix
-              </button>
+              </Button>
               {fixes[index] && (
                 <div className="mt-4">
                   <h3 className="font-bold text-green-500">Fixed Code:</h3>

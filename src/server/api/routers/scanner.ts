@@ -8,6 +8,7 @@ import {
   createPR,
 } from "@/lib/github";
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 
 export const scannerRouter = createTRPCRouter({
   scanRepository: publicProcedure
@@ -30,6 +31,7 @@ export const scannerRouter = createTRPCRouter({
           "--config=auto",
           tempDir,
           "--json",
+          "--json-output=output.json",
         ]);
 
         const vulnerabilitySchema = z.object({
@@ -56,7 +58,7 @@ export const scannerRouter = createTRPCRouter({
         let formattedResults = [];
         try {
           const scanResults = semgrepOutputSchema.parse(
-            JSON.parse(stdout.toString()),
+            JSON.parse(readFileSync("output.json", "utf8")),
           );
           formattedResults = scanResults.results.map((vuln) => ({
             file: vuln.path,
@@ -68,8 +70,8 @@ export const scannerRouter = createTRPCRouter({
             message: vuln.extra.message,
             code: vuln.extra.lines,
           }));
-        } catch {
-          throw new Error("Failed to parse Semgrep output.");
+        } catch (error) {
+          throw new Error("Failed to parse Semgrep output: " + error.message);
         }
 
         const scan = await ctx.db.scan.create({
