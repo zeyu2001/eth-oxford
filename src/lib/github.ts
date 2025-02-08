@@ -17,9 +17,13 @@ export const getInstallation = async (installationId: number) => {
 
 export const getRepositories = async (installationId: number) => {
   const octokit = await app.getInstallationOctokit(installationId);
-  return await octokit.rest.apps.listReposAccessibleToInstallation({
-    installation_id: installationId,
-  });
+  return await octokit.paginate(
+    octokit.rest.apps.listReposAccessibleToInstallation,
+    {
+      installation_id: installationId,
+      per_page: 100,
+    },
+  );
 };
 
 export const cloneRepository = async (

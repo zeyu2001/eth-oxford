@@ -53,8 +53,9 @@ export default function Page() {
     return <p>Failed to get repositories</p>;
   }
 
-  const repositories = getRepositoriesQuery.data.data.repositories.sort(
-    (a, b) => new Date(b.pushed_at).getTime() - new Date(a.pushed_at).getTime(),
+  const repositories = getRepositoriesQuery.data.sort(
+    (a, b) =>
+      new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
   );
 
   return (
@@ -64,20 +65,32 @@ export default function Page() {
         {repositories.map((repo) => (
           <Card key={repo.id}>
             <CardHeader>
-              <CardTitle className="flex items-center">
-                {repo.private ? (
-                  <Lock className="mr-2 size-6" />
-                ) : (
-                  <Book className="mr-2 size-6" />
-                )}
-                {repo.name}
-                <Button className="ml-2" variant="ghost">
-                  <Link href={repo.html_url} target="_blank">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  {repo.private ? (
+                    <Lock className="mr-2 size-6" />
+                  ) : (
+                    <Book className="mr-2 size-6" />
+                  )}
+                  <span>{repo.full_name}</span>
+                  <span className="ml-2 text-sm text-gray-500">
+                    {repo.language}
+                  </span>
+                </div>
+                <Button variant="ghost">
+                  <Link
+                    href={repo.html_url}
+                    target="_blank"
+                    className="inline-flex items-center"
+                  >
+                    <span className="mr-1">View on GitHub</span>
                     <ExternalLink />
                   </Link>
                 </Button>
-              </CardTitle>
-              <CardDescription>{repo.language}</CardDescription>
+              </div>
+              <CardDescription>
+                Last updated {new Date(repo.updated_at).toLocaleDateString()}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Button
