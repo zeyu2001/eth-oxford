@@ -8,7 +8,7 @@ import {
   TransitionChild,
 } from "@headlessui/react";
 import { Cog6ToothIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { BookCopyIcon, House } from "lucide-react/icons";
+import { BookCopyIcon, House, Radar } from "lucide-react/icons";
 import { usePathname } from "next/navigation";
 import { useUserStore } from "@/stores/use-user-store";
 
@@ -50,6 +50,12 @@ export default function Layout({
       icon: BookCopyIcon,
       current: path === "/repositories",
     },
+    {
+      name: "Incidents",
+      href: "/incidents",
+      icon: Radar,
+      current: path === "/incidents",
+    },
   ];
 
   return (
@@ -85,7 +91,7 @@ export default function Layout({
             <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-4 ring-1 ring-white/10">
               <div className="flex h-16 shrink-0 items-center">
                 <img
-                  alt="Your Company"
+                  alt="CodeCure"
                   src="https://tailwindui.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
                   className="h-8 w-auto"
                 />
@@ -141,10 +147,11 @@ export default function Layout({
         <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-4">
           <div className="flex h-16 shrink-0 items-center">
             <img
-              alt="Your Company"
+              alt="CodeCure"
               src="https://tailwindui.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
               className="h-8 w-auto"
             />
+            <p className="ml-2 text-sm/6 font-semibold text-white">CodeCure</p>
           </div>
           <nav className="flex flex-1 flex-col">
             <ul role="list" className="flex flex-1 flex-col gap-y-7">

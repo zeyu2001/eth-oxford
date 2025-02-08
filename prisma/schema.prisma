@@ -10,11 +10,26 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model Vulnerability {
+    id        Int    @id @default(autoincrement())
+    file      String
+    startLine Int
+    startCol  Int
+    endLine   Int
+    endCol    Int
+    severity  String
+    message   String
+    code      String
+    Scan      Scan?  @relation(fields: [scanId], references: [id])
+    scanId    Int?
+}
 
-    @@index([name])
+model Scan {
+    id           Int             @id @default(autoincrement())
+    username     String
+    repositoryId String
+    result       Vulnerability[]
+    updatedAt    DateTime        @updatedAt
+
+    @@index([repositoryId])
 }

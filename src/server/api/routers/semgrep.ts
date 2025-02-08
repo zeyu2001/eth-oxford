@@ -1,48 +1,43 @@
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { exec } from "child_process";
-import util from "util";
-import { OpenAI } from "openai";
 import { z } from "zod";
 
-const execPromise = util.promisify(exec);
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
 export const semgrepRouter = createTRPCRouter({
-  scanFiles: publicProcedure
-  .input(z.object({ directory: z.string() }))
-  .query(async ({ input }) => {
-    try {
-      // Run Semgrep on the src/ folder and return JSON output
-      const directory = input.directory;
-      console.log(`semgrep scan --config=auto ${directory} --json --json-output=semgrep.json`)
-      const { stdout, stderr } = await execPromise(`semgrep scan --config=auto ${directory}/ --json --json-output=semgrep.json`);
+  scanResults: publicProcedure
+    .input(z.object({ repositoryId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const scan = await ctx.db.scan.findMany({
+        where: {
+          repositoryId: input.repositoryId,
+        },
+        include: {
+          result: true,
+        },
+      });
 
-      if (stderr) {
-        console.error("Semgrep Error:", stderr);
+      if (!scan) {
+        throw new Error("No scan results found for this repository.");
       }
 
-      // Parse JSON output from Semgrep
-      const scanResults = JSON.parse(stdout);
+      return scan;
+    }),
 
-      // Parse JSON output from Semgrep
-      const formattedResults = scanResults.results.map((vuln: any) => ({
-        file: vuln.path,
-        start: `Line ${vuln.start.line}, Col ${vuln.start.col}`,
-        end: `Line ${vuln.end.line}, Col ${vuln.end.col}`,
-        severity: vuln.extra.severity,
-        message: vuln.extra.message,
-        codeSnippet: vuln.extra.lines,
-      }));
+  scanResultById: publicProcedure
+    .input(z.object({ id: z.number(), repositoryId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const scan = await ctx.db.scan.findUnique({
+        where: {
+          id: input.id,
+          repositoryId: input.repositoryId,
+        },
+        include: {
+          result: true,
+        },
+      });
 
-      console.log(formattedResults);
+      if (!scan) {
+        throw new Error("No scan results found for this scan ID.");
+      }
 
-      return formattedResults;
-    } catch (error: any) {
-      console.error("Semgrep execution failed:", error);
-      return {
-        error: "Semgrep scan failed",
-        details: error.message || error.toString(),
-      };
-    }
-  }),
+      return scan;
+    }),
 });
