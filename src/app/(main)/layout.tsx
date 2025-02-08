@@ -149,11 +149,7 @@ export default function Layout({
         {/* Sidebar component, swap this element with another sidebar if you like */}
         <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-4">
           <div className="flex h-16 shrink-0 items-center">
-            <img
-              alt="CodeCure"
-              src="https://tailwindui.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
-              className="h-8 w-auto"
-            />
+            <img alt="CodeCure" src="/favicon.ico" className="h-8 w-auto" />
             <p className="ml-2 text-sm/6 font-semibold text-white">CodeCure</p>
           </div>
           <nav className="flex flex-1 flex-col">

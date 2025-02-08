@@ -1,30 +1,18 @@
-# Create T3 App
+# CodeCure
+
+This is a submission for the ETH Oxford 2025 hackathon.
+
+CodeCure is an AI-powered static code analysis platform that helps developers write more secure code. Install the CodeCure GitHub integration, and we will automatically scan your code for security vulnerabilities and submit pull requests with fixes.
 
 This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
 
-## What's next? How do I make an app with this?
+## Features
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+- Automatic code scanning for a wide range of security vulnerabilities
+- Automatic pull requests with fixes
+- Insights and reports on issues found across your repositories
+- Vulnerability information is stored securely on the blockchain using the [Flare Data Connector](https://flare.network/dataconnector/),
+  providing a tamper-proof audit trail
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
-
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
-
-## Learn More
-
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
-
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
-
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
-
-## How do I deploy this?
-
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
-# eth-oxford
+The FDC uses a set of indepdenent attestation providers which fetch the information from Web2 APIs and deliver it to the Flare Network.
+The data proofs confirm that a vulnerability was found in a specific repository at a specific time.
