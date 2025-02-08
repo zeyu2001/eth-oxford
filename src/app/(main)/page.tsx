@@ -6,6 +6,8 @@ import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/trpc/react";
 import { GithubInstallationCard } from "./githubInstallationCard";
+import { Chart } from "../_components/chart";
+import { RecentScans } from "../_components/recentScans";
 
 export default function Page() {
   const { toast } = useToast();
@@ -71,11 +73,15 @@ export default function Page() {
   ]);
 
   return (
-    <div>
+    <div className="space-y-4">
       <GithubInstallationCard
         installationId={installationId}
         username={username}
       />
+      <div className="grid grid-cols-2 gap-4">
+        <Chart />
+        <RecentScans />
+      </div>
     </div>
   );
 }

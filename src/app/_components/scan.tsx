@@ -90,7 +90,7 @@ export function SecurityScan({
 
   return (
     <div className="p-4">
-      <h1 className="mb-4 text-2xl font-bold">Semgrep Scan Results</h1>
+      <h1 className="mb-4 text-2xl font-bold">Code Analysis Results</h1>
       {vulns?.length > 0 ? (
         <ul className="space-y-4">
           {vulns.map((result, index) => (
@@ -99,7 +99,7 @@ export function SecurityScan({
                 {result.file.split("/").slice(2).join("/")}
               </p>
               <p
-                className={`font-semibold ${result.severity === "WARNING" ? "text-yellow-500" : "text-red-500"}`}
+                className={`font-semibold ${result.severity === "ERROR" ? "text-red-500" : result.severity === "WARNING" ? "text-yellow-500" : "text-blue-400"}`}
               >
                 {result.severity}
               </p>

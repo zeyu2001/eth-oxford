@@ -40,4 +40,67 @@ export const semgrepRouter = createTRPCRouter({
 
       return scan;
     }),
+
+  vulnerabilityStatistics: publicProcedure.query(async ({ ctx }) => {
+    const scan = await ctx.db.scan.findMany({
+      include: {
+        result: true,
+      },
+    });
+
+    if (!scan) {
+      throw new Error("No scan results found.");
+    }
+
+    const statistics = scan.map((s) => {
+      const numError = s.result.filter(
+        (vuln) => vuln.severity === "ERROR",
+      ).length;
+
+      const numWarn = s.result.filter(
+        (vuln) => vuln.severity === "WARNING",
+      ).length;
+
+      const numInfo = s.result.filter(
+        (vuln) => vuln.severity === "INFO",
+      ).length;
+
+      return {
+        scanId: s.id,
+        numError,
+        numWarn,
+        numInfo,
+      };
+    });
+
+    const total = statistics.reduce(
+      (acc, curr) => {
+        acc.error += curr.numError;
+        acc.warn += curr.numWarn;
+        acc.info += curr.numInfo;
+        return acc;
+      },
+      { error: 0, warn: 0, info: 0 },
+    );
+
+    return total;
+  }),
+
+  recentScans: publicProcedure.query(async ({ ctx }) => {
+    const scans = await ctx.db.scan.findMany({
+      include: {
+        result: true,
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+      take: 3,
+    });
+
+    if (!scans) {
+      throw new Error("No scan results found.");
+    }
+
+    return scans;
+  }),
 });

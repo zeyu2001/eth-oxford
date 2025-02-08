@@ -2,7 +2,12 @@
 
 import { Spinner } from "@/components/spinner";
 import { api } from "@/trpc/react";
-import { ChevronRightIcon, OctagonAlert, TriangleAlert } from "lucide-react";
+import {
+  AlertCircle,
+  ChevronRightIcon,
+  OctagonAlert,
+  TriangleAlert,
+} from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
@@ -10,6 +15,7 @@ const statuses = {
   passed: "text-green-400 bg-green-400/10",
   warn: "text-yellow-400 bg-yellow-400/10",
   error: "text-rose-400 bg-rose-400/10",
+  info: "text-blue-400 bg-blue-400/10",
 };
 
 function classNames(...classes: string[]) {
@@ -53,8 +59,18 @@ export default function Page() {
             (vuln) => vuln.severity === "WARNING",
           ).length;
 
+          const numInfo = result.result.filter(
+            (vuln) => vuln.severity === "INFO",
+          ).length;
+
           const status =
-            numError > 0 ? "error" : numWarn > 0 ? "warn" : "passed";
+            numError > 0
+              ? "error"
+              : numWarn > 0
+                ? "warn"
+                : numInfo > 0
+                  ? "info"
+                  : "passed";
 
           return (
             <li
@@ -107,6 +123,12 @@ export default function Page() {
                 <span className="flex items-center gap-x-1 text-sm font-semibold text-yellow-400">
                   <TriangleAlert className="text-yellow-400" />
                   {numWarn}
+                </span>
+              )}
+              {numInfo > 0 && (
+                <span className="flex items-center gap-x-1 text-sm font-semibold text-blue-400">
+                  <AlertCircle className="text-blue-400" />
+                  {numInfo}
                 </span>
               )}
               <ChevronRightIcon
