@@ -89,35 +89,35 @@ export const scannerRouter = createTRPCRouter({
           },
         });
 
-        const child = spawn(
-          "npx",
-          [
-            "hardhat",
-            "run",
-            "--network",
-            "coston",
-            "--config",
-            "hardhat.config.cjs",
-            "scripts/upload.ts",
-          ],
-          {
-            env: {
-              ...process.env,
-              TS_NODE_PROJECT: "tsconfig.hardhat.json",
-              REPOSITORY_ID: input.repositoryId,
-            },
-          },
-        );
+        // const child = spawn(
+        //   "npx",
+        //   [
+        //     "hardhat",
+        //     "run",
+        //     "--network",
+        //     "coston",
+        //     "--config",
+        //     "hardhat.config.cjs",
+        //     "scripts/upload.ts",
+        //   ],
+        //   {
+        //     env: {
+        //       ...process.env,
+        //       TS_NODE_PROJECT: "tsconfig.hardhat.json",
+        //       REPOSITORY_ID: input.repositoryId,
+        //     },
+        //   },
+        // );
 
-        child.stdout.on("data", (data) => {
-          console.log(`stdout: ${data}`);
-        });
-        child.stderr.on("data", (data) => {
-          console.error(`stderr: ${data}`);
-        });
-        child.on("close", (code) => {
-          console.log(`child process exited with code ${code}`);
-        });
+        // child.stdout.on("data", (data) => {
+        //   console.log(`stdout: ${data}`);
+        // });
+        // child.stderr.on("data", (data) => {
+        //   console.error(`stderr: ${data}`);
+        // });
+        // child.on("close", (code) => {
+        //   console.log(`child process exited with code ${code}`);
+        // });
 
         return scan;
       } catch (error) {
