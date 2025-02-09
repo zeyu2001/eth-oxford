@@ -78,10 +78,12 @@ export default function Page() {
         installationId={installationId}
         username={username}
       />
-      <div className="grid grid-cols-2 gap-4">
-        <Chart />
-        <RecentScans />
-      </div>
+      {username && installationId && (
+        <div className="grid grid-cols-2 gap-4">
+          <Chart />
+          <RecentScans />
+        </div>
+      )}
     </div>
   );
 }

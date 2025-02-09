@@ -58,7 +58,7 @@ export const fixerRoute = createTRPCRouter({
       - fixStartCol: Start column of the fix
       - fixEndCol: End column of the fix
 
-      The fix should be such that if it is inserted from fixStartLine:fixStartCol to fixEndLine:fixEndCol in the original code, it should resolve the security vulnerability.
+      The fix should be such that if it is replaced from fixStartLine:fixStartCol to fixEndLine:fixEndCol in the original code, it should resolve the security vulnerability.
       `;
 
         const completion = await openai.beta.chat.completions.parse({
@@ -80,15 +80,15 @@ export const fixerRoute = createTRPCRouter({
         const fixContentLines = result.fixedCode.split("\n");
         const fixedFileContent = [];
 
-        for (let i = 0; i < result.fixStartLine; i++) {
+        for (let i = 0; i < result.fixStartLine - 1; i++) {
           fixedFileContent.push(fileContentLines[i]);
         }
 
-        const beforeFix = fileContentLines[result.fixStartLine]!.substring(
+        const beforeFix = fileContentLines[result.fixStartLine - 1]!.substring(
           0,
           result.fixStartCol,
         );
-        const afterFix = fileContentLines[result.fixEndLine]!.substring(
+        const afterFix = fileContentLines[result.fixEndLine - 1]!.substring(
           result.fixEndCol,
         );
 
@@ -111,7 +111,7 @@ export const fixerRoute = createTRPCRouter({
         }
 
         // Append all lines after the fix region unchanged
-        for (let i = result.fixEndLine + 1; i < fileContentLines.length; i++) {
+        for (let i = result.fixEndLine; i < fileContentLines.length; i++) {
           fixedFileContent.push(fileContentLines[i]);
         }
 

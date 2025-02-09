@@ -8,8 +8,24 @@ import CodeMirror from "@uiw/react-codemirror";
 import { okaidia } from "@uiw/codemirror-theme-okaidia";
 import { Button } from "@/components/ui/button";
 import { type FixResult } from "@/server/api/routers/fixer";
-import { HammerIcon } from "lucide-react";
+import {
+  CircleAlertIcon,
+  ExternalLinkIcon,
+  GitPullRequestArrowIcon,
+  HammerIcon,
+  OctagonAlertIcon,
+  TriangleAlertIcon,
+} from "lucide-react";
 import { useUserStore } from "@/stores/use-user-store";
+import Link from "next/link";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 type FinalFixResult = FixResult & { fixedFile: string };
 
@@ -27,10 +43,11 @@ export function SecurityScan({
   const fixVulnerability = api.fixer.fixVulnerabilities.useMutation();
   const pullRequest = api.scanner.createPullRequest.useMutation();
   const [fixes, setFixes] = useState<Record<number, FinalFixResult>>({});
-  const [pr, setPr] = useState<Record<number, boolean>>({});
+  const [pr, setPr] = useState<Record<number, string>>({});
 
   const installationId = useUserStore((state) => state.installationId);
   const [isFixing, setIsFixing] = useState(false);
+  const [isMakingPR, setIsMakingPR] = useState(false);
 
   if (isLoading || data === undefined) {
     return (
@@ -69,24 +86,47 @@ export function SecurityScan({
     index: number,
     vulnerability: (typeof data.result)[0],
   ) => {
+    setIsMakingPR(true);
     const title = vulnerability.file.split("/")[4];
     const filepath = vulnerability.file.split("/").slice(2).join("/");
     const input = {
       installationId: installationId!,
       repositoryId,
-      title: title!,
-      body: vulnerability.message,
+      title: `Fix vulnerability in ${title}`,
+      body: `# Vulnerability Fix
+${vulnerability.message}
+      
+## Details
+
+- **Affected File**: \`${vulnerability.file}\`
+- **Severity**: ${vulnerability.severity}
+- **Affected Lines**: ${vulnerability.startLine}:${vulnerability.startCol} - ${vulnerability.endLine}:${vulnerability.endCol}
+
+## Vulnerable Code
+
+\`\`\`
+${vulnerability.code}
+\`\`\`
+`,
       filepath: filepath,
       newFileContent: fixes[index]!.fixedFile,
     };
     const result = await pullRequest.mutateAsync(input);
     if (result.madePR) {
-      setPr((prev) => ({ ...prev, [index]: true }));
+      setPr((prev) => ({ ...prev, [index]: result.madePR.data.html_url }));
     }
-    setIsFixing(false);
+    setIsMakingPR(false);
   };
 
-  const vulns = data.result;
+  const vulns = data.result.sort((a, b) => {
+    if (a.severity === "ERROR") return -1;
+    if (b.severity === "ERROR") return 1;
+    if (a.severity === "WARNING") return -1;
+    if (b.severity === "WARNING") return 1;
+    if (a.severity === "INFO") return -1;
+    if (b.severity === "INFO") return 1;
+    return 0;
+  });
 
   return (
     <div className="p-4">
@@ -94,56 +134,101 @@ export function SecurityScan({
       {vulns?.length > 0 ? (
         <ul className="space-y-4">
           {vulns.map((result, index) => (
-            <li key={index} className="max-w-5xl rounded-lg border p-4 shadow">
-              <p className="text-md truncate font-bold">
-                {result.file.split("/").slice(2).join("/")}
-              </p>
-              <p
-                className={`font-semibold ${result.severity === "ERROR" ? "text-red-500" : result.severity === "WARNING" ? "text-yellow-500" : "text-blue-400"}`}
-              >
-                {result.severity}
-              </p>
-              <p className="text-sm">{result.message}</p>
-              <p className="text-sm text-gray-500">
-                Line {result.startLine}:{result.startCol} - Line{" "}
-                {result.endLine}:{result.endCol}
-              </p>
-              <CodeMirror
-                value={result.code}
-                readOnly={true}
-                theme={okaidia}
-                basicSetup={{
-                  lineNumbers: false,
-                }}
-              />
-              <Button
-                onClick={() => handleFix(index, result)}
-                className="mt-2"
-                disabled={isFixing}
-              >
-                {isFixing ? (
-                  <Spinner size="sm" />
-                ) : (
-                  <HammerIcon className="mr-2 h-4 w-4" />
-                )}
-                Fix Vulnerability
-              </Button>
-              {fixes[index] && (
-                <div className="mt-4">
-                  <h3 className="font-bold text-green-500">Fixed Code:</h3>
-                  <pre className="rounded bg-gray-900 p-2 text-white">
-                    {fixes[index].fixedCode}
-                  </pre>
-                  <Button
-                    onClick={() => makePullRequest(index, result)}
-                    className="mt-2"
+            <Card key={index} className="max-w-5xl">
+              <CardHeader>
+                <p className="text-md flex items-center">
+                  <span
+                    className={`flex items-center font-bold ${
+                      result.severity === "ERROR"
+                        ? "text-red-500"
+                        : result.severity === "WARNING"
+                          ? "text-yellow-500"
+                          : "text-blue-400"
+                    }`}
                   >
-                    Make PR
-                  </Button>
-                </div>
-              )}
-              {pr[index] && <p>Pull Request Made </p>}
-            </li>
+                    {result.severity === "ERROR" ? (
+                      <OctagonAlertIcon className="mr-2 h-4 w-4" />
+                    ) : result.severity === "WARNING" ? (
+                      <TriangleAlertIcon className="mr-2 h-4 w-4" />
+                    ) : (
+                      <CircleAlertIcon className="mr-2 h-4 w-4" />
+                    )}
+                    {result.severity}
+                  </span>
+                  <span className="ml-4 truncate font-semibold">
+                    {result.file.split("/").slice(2).join("/")}
+                  </span>
+                </p>
+                <CardDescription>
+                  Line {result.startLine}:{result.startCol} - Line{" "}
+                  {result.endLine}:{result.endCol}
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent>
+                <p className="text-sm">{result.message}</p>
+                <CodeMirror
+                  value={result.code}
+                  readOnly={true}
+                  theme={okaidia}
+                  basicSetup={{
+                    lineNumbers: false,
+                  }}
+                  className="my-2"
+                />
+                <Button
+                  onClick={() => handleFix(index, result)}
+                  className="mt-2"
+                  disabled={isFixing}
+                >
+                  {isFixing ? (
+                    <Spinner size="sm" />
+                  ) : (
+                    <HammerIcon className="mr-2 h-4 w-4" />
+                  )}
+                  Fix Vulnerability
+                </Button>
+                {fixes[index] && (
+                  <div className="mt-4">
+                    <h3 className="font-bold text-green-500">Fixed Code:</h3>
+                    <CodeMirror
+                      value={fixes[index].fixedCode}
+                      readOnly={true}
+                      theme={okaidia}
+                      basicSetup={{
+                        lineNumbers: false,
+                      }}
+                      className="my-2"
+                    />
+                    {pr[index] ? (
+                      <Button className="mt-2">
+                        <Link
+                          href={pr[index]}
+                          target="_blank"
+                          className="flex items-center"
+                        >
+                          <ExternalLinkIcon className="mr-2 h-4 w-4" />
+                          <span className="mr-1">View Pull Request</span>
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => makePullRequest(index, result)}
+                        className="mt-2"
+                        disabled={isMakingPR}
+                      >
+                        {isMakingPR ? (
+                          <Spinner size="sm" />
+                        ) : (
+                          <GitPullRequestArrowIcon className="mr-2 h-4 w-4" />
+                        )}
+                        Make PR
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           ))}
         </ul>
       ) : (

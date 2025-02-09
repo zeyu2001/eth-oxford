@@ -138,7 +138,7 @@ export const scannerRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input }) => {
-      const branchName = `security/codecure-${input.title.toLowerCase().replace(" ", "-")}`;
+      const branchName = `security/codecure-${input.title.toLowerCase().replace(/[^a-z0-9]/g, "-")}-${Date.now()}`;
 
       const defaultBranch = await getDefaultBranch(
         input.installationId,
@@ -186,7 +186,7 @@ export const scannerRouter = createTRPCRouter({
       const prResult = await createPR(
         input.installationId,
         input.repositoryId,
-        input.title,
+        `[CodeCure] ${input.title}`,
         input.body,
         branchName,
         "main",
