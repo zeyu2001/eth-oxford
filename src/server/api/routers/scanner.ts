@@ -10,8 +10,9 @@ import {
   getFileSHA,
   getLatestSha,
 } from "@/lib/github";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { uploadToBlockchain } from "scripts/upload";
 
 export const scannerRouter = createTRPCRouter({
   scanRepository: publicProcedure
@@ -87,6 +88,35 @@ export const scannerRouter = createTRPCRouter({
               create: formattedResults,
             },
           },
+        });
+
+        const child = spawn(
+          "npx",
+          [
+            "hardhat",
+            "run",
+            "--network",
+            "coston",
+            "--config",
+            "tsconfig.hardhat.json",
+            "scripts/upload.ts",
+          ],
+          {
+            env: {
+              ...process.env,
+              REPOSITORY_ID: input.repositoryId,
+            },
+          },
+        );
+
+        child.stdout.on("data", (data) => {
+          console.log(`stdout: ${data}`);
+        });
+        child.stderr.on("data", (data) => {
+          console.error(`stderr: ${data}`);
+        });
+        child.on("close", (code) => {
+          console.log(`child process exited with code ${code}`);
         });
 
         return scan;
