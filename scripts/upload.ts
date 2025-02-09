@@ -126,11 +126,7 @@ async function main() {
 
   console.log(`Voting round ID determined: ${roundId}`);
 
-<<<<<<< Updated upstream
   await new Promise((resolve) => setTimeout(resolve, 180000)); // Wait for 180 seconds
-=======
-  await new Promise((resolve) => setTimeout(resolve, 180000)); // Wait for 120 seconds
->>>>>>> Stashed changes
 
   const proofResponse = await fetch(
     `${DA_LAYER_URL_COSTON}fdc/get-proof-round-id-bytes`,

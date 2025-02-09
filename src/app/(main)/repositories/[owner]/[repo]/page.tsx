@@ -1,5 +1,6 @@
 "use client";
 
+import Metamask from "@/app/_components/metamask";
 import { Spinner } from "@/components/spinner";
 import { api } from "@/trpc/react";
 import {
@@ -49,6 +50,7 @@ export default function Page() {
   return (
     <div>
       <h1 className="text-2xl font-bold">Results</h1>
+      <Metamask repositoryId={repositoryId} />
       <ul className="divide-y divide-white/5">
         {results.map((result) => {
           const numError = result.result.filter(
