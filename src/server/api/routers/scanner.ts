@@ -32,6 +32,8 @@ export const scannerRouter = createTRPCRouter({
         const { stdout, stderr } = spawnSync("semgrep", [
           "scan",
           "--config=auto",
+          "-j",
+          "1",
           tempDir,
           "--json",
           "--json-output=output.json",
