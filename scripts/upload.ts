@@ -3,7 +3,7 @@
 import { artifacts, ethers } from "hardhat";
 
 async function main() {
-  const VULN_CONTRACT_ADDRESS = "0x18E3233dA510607d75AbD12E7B34CC004e751567"; // Replace with actual address
+  const VULN_CONTRACT_ADDRESS = "0x0be7904080F6c55766cfeF38147125535921E3Ed"; // Replace with actual address
   const FIRST_VOTING_ROUND_TS = 1658429955;
   const VOTING_EPOCH_DURATION = 90;
 
@@ -126,7 +126,11 @@ async function main() {
 
   console.log(`Voting round ID determined: ${roundId}`);
 
+<<<<<<< Updated upstream
   await new Promise((resolve) => setTimeout(resolve, 180000)); // Wait for 180 seconds
+=======
+  await new Promise((resolve) => setTimeout(resolve, 180000)); // Wait for 120 seconds
+>>>>>>> Stashed changes
 
   const proofResponse = await fetch(
     `${DA_LAYER_URL_COSTON}fdc/get-proof-round-id-bytes`,

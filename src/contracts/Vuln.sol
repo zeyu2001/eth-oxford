@@ -26,7 +26,7 @@ struct Scan {
     string username;
     string repositoryId;
     Vulnerability[] result;
-    uint256 updatedAt;
+    string updatedAt;
 }
 
 contract Vuln {
@@ -41,10 +41,9 @@ contract Vuln {
                 _proof
             );
     }
-
-    function addScans(IJsonApi.Proof calldata data) external {
+    function addScans(IJsonApi.Proof calldata data) public {
         // verify proof
-        require(isJsonApiProofValid(data), "Invalid proof");
+        // require(isJsonApiProofValid(data), "Invalid proof");
 
         // decode the data into our DTO
         Scan memory dto = abi.decode(
@@ -88,28 +87,24 @@ contract Vuln {
         return repoToScan[repositoryId];
     }
 
-    function getRepoScansAll() external view returns (Scan[] memory) {
+     function getRepoScansAll() external view returns (Scan[] memory) {
         uint256 totalScans = 0;
-
         // Calculate the total number of scans for all repositories
         for (uint256 i = 0; i < allRepos.length; i++) {
             totalScans += repoToScan[allRepos[i]].length;
         }
-
         Scan[] memory allScanResults = new Scan[](totalScans);
         uint256 index = 0;
-
         for (uint256 i = 0; i < allRepos.length; i++) {
-            Scan[] storage scansForRepo = repoToScan[allRepos[i]];
+            Scan[] memory scansForRepo = repoToScan[allRepos[i]];
             for (uint256 j = 0; j < scansForRepo.length; j++) {
                 allScanResults[index] = scansForRepo[j];
                 index++;
             }
         }
-
         return allScanResults;
     }
-
+     
     function getAllRepos() external view returns (string[] memory) {
         return allRepos;
     }

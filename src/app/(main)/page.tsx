@@ -8,6 +8,8 @@ import { api } from "@/trpc/react";
 import { GithubInstallationCard } from "./githubInstallationCard";
 import { Chart } from "../_components/chart";
 import { RecentScans } from "../_components/recentScans";
+import Metamask from "../_components/metamask";
+
 
 export default function Page() {
   const { toast } = useToast();
@@ -78,12 +80,20 @@ export default function Page() {
         installationId={installationId}
         username={username}
       />
+<<<<<<< Updated upstream
       {username && installationId && (
         <div className="grid grid-cols-2 gap-4">
           <Chart />
           <RecentScans />
         </div>
       )}
+=======
+      <div className="grid grid-cols-2 gap-4">
+        <Chart />
+        <RecentScans />
+        <Metamask />
+      </div>
+>>>>>>> Stashed changes
     </div>
   );
 }
