@@ -98,12 +98,13 @@ export const scannerRouter = createTRPCRouter({
             "--network",
             "coston",
             "--config",
-            "tsconfig.hardhat.json",
+            "hardhat.config.cjs",
             "scripts/upload.ts",
           ],
           {
             env: {
               ...process.env,
+              TS_NODE_PROJECT: "tsconfig.hardhat.json",
               REPOSITORY_ID: input.repositoryId,
             },
           },
