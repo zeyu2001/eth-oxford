@@ -118,15 +118,7 @@ ${vulnerability.code}
     setIsMakingPR(false);
   };
 
-  const vulns = data.result.sort((a, b) => {
-    if (a.severity === "ERROR") return -1;
-    if (b.severity === "ERROR") return 1;
-    if (a.severity === "WARNING") return -1;
-    if (b.severity === "WARNING") return 1;
-    if (a.severity === "INFO") return -1;
-    if (b.severity === "INFO") return 1;
-    return 0;
-  });
+  const vulns = data.result;
 
   return (
     <div className="p-4">
