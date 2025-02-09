@@ -12,7 +12,6 @@ import {
 } from "@/lib/github";
 import { spawn, spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { uploadToBlockchain } from "scripts/upload";
 
 export const scannerRouter = createTRPCRouter({
   scanRepository: publicProcedure
